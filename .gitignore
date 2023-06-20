@@ -8,3 +8,5 @@
 #tf variable file may contain sesitive data
 *.tfvars
 
+#ignore crash logs
+crash.log
