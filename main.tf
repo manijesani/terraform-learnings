@@ -8,6 +8,7 @@ variable "env_prefix" {}
 variable "my_ip" {}
 variable "instance_type" {}
 variable "public_key_location" {}
+variable "private_key_location" {}
 resource "aws_vpc" "myapp-vpc" {
     cidr_block = var.vpc_cidr_blocks
     tags = {
@@ -106,10 +107,22 @@ resource "aws_instance" "myapp" {
     associate_public_ip_address = true
     key_name = aws_key_pair.ssh-key.key_name
 
-    user_data = file("entry-script.sh")
-
-    tags = {
-        Name = "${var.env_prefix}-instance"
+    # user_data = file("entry-script.sh")
+    connection { # to establish connection
+      type = "ssh"
+      host = self.public_ip
+      user = "ec2-user"
+      private_key = file(var.private_key_location)
+    }
+    # provisioner "remote-exec" {   #allow to connect remote server and exec commands
+    #   inline = [
+    #     "export ENV=dev",
+    #     "mkdir newdir"
+    #   ]
+    # }
+    provisioner "file" {   #to copy file from local to remote machine
+      source = "entry-script.sh"
+      destination = "/home/ec2-user/entry-script-on-ec2.sh"
     }
 }
 
